@@ -17,26 +17,28 @@ type DataPoint struct {
 func main() {
 	point := &DataPoint{Value: 0.1, Timestamp: 1}
 
-	out1, err := EncodeDecodeWithBinary(point)
+	out1, err := EncodeDecodeWithBinary(point, true)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Printf("encoding/binary decoded point: %#v\n\n", out1)
 
-	out2, err := EncodeDecodeWithGob(point)
+	out2, err := EncodeDecodeWithGob(point, true)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Printf("encoding/gob decoded point: %#v\n", out2)
 }
 
-func EncodeDecodeWithBinary(point *DataPoint) (*DataPoint, error) {
+func EncodeDecodeWithBinary(point *DataPoint, verbose bool) (*DataPoint, error) {
 	buf := &bytes.Buffer{}
 	if err := binary.Write(buf, binary.LittleEndian, point); err != nil {
 		return nil, err
 	}
-	//fmt.Println("encoding/binary encoded binary length:", buf.Len())
-	//fmt.Println("encoding/binary encoded string:", buf.String())
+	if verbose {
+		fmt.Println("encoding/binary encoded binary length:", buf.Len())
+		fmt.Println("encoding/binary encoded binary:", buf.Bytes())
+	}
 	dst := &DataPoint{}
 	if err := binary.Read(buf, binary.LittleEndian, dst); err != nil {
 		return nil, err
@@ -44,13 +46,15 @@ func EncodeDecodeWithBinary(point *DataPoint) (*DataPoint, error) {
 	return dst, nil
 }
 
-func EncodeDecodeWithGob(point *DataPoint) (*DataPoint, error) {
+func EncodeDecodeWithGob(point *DataPoint, verbose bool) (*DataPoint, error) {
 	buf := &bytes.Buffer{}
 	if err := gob.NewEncoder(buf).Encode(point); err != nil {
 		return nil, err
 	}
-	//fmt.Println("encoding/gob encoded binary length:", buf.Len())
-	//fmt.Println("encoding/gob encoded string:", buf.String())
+	if verbose {
+		fmt.Println("encoding/gob encoded binary length:", buf.Len())
+		fmt.Println("encoding/gob encoded binary:", buf.Bytes())
+	}
 	dst := &DataPoint{}
 	if err := gob.NewDecoder(buf).Decode(dst); err != nil {
 		return nil, err
